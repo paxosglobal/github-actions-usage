@@ -151,7 +151,7 @@ def main():
     print(summary_table)
     print(workflow_table)
     # Check for a paid usage limit first, as it's higher severity and if we've hit this limit then we definitely have hit the free usage limit
-    if int(raise_alarm_paid_usage_limit) > -1 && total_paid_minutes_used > int(raise_alarm_paid_usage_limit):
+    if int(raise_alarm_paid_usage_limit) > -1 and total_paid_minutes_used > int(raise_alarm_paid_usage_limit):
         error_message = f'Your organisation has hit the user-defined limit of {raise_alarm_paid_usage_limit} paid minutes by using a total of {total_paid_minutes_used}. paid minutes'
         set_workflow_output('failure-reason', error_message)
         raise PaidMinutesThresholdError(error_message)  
