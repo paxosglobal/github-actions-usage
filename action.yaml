@@ -21,7 +21,7 @@ inputs:
     default: "100"
   raiseAlarmOnPaidUsageLimit:
     description: "The number of paid minutes above which the workflow will fail, and so a notification can
-      be sent. For example if you get 3000 minutes for free and dont want to spend any more than 5000 after that,
+      be sent. For example if you get 3000 minutes for free and want to be notified when exceeding 5000 minutes after that,
       and 8001 total minutes are used, then the workflow will fail. Note that the limit you specify here is in paid
       minutes (5000, in the example), not total minutes. Setting to a negative number disables this alarm."
     required: false
