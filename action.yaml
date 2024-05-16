@@ -23,9 +23,9 @@ inputs:
     description: "The number of paid minutes above which the workflow will fail, and so a notification can
       be sent. For example if you get 3000 minutes for free and dont want to spend any more than 5000 after that,
       and 8001 total minutes are used, then the workflow will fail. Note that the limit you specify here is in paid
-      minutes (5000, in the example), not total minutes"
+      minutes (5000, in the example), not total minutes. Setting to a negative number disables this alarm."
     required: false
-    default: "0"
+    default: "-1"
   skipReposWithoutUsage:
     description: "Don't print information about repos that have no workflow runs"
     required: false

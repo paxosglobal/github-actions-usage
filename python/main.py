@@ -128,7 +128,7 @@ def main():
     summary_table.add_row(["Remaining Minutes: " + str(remaining_minutes), "", "", ""])
     summary_table.add_row(["Alarm Triggered at: " + raise_alarm_remaining_minutes, "", "", ""])
     summary_table.add_row(["Paid Minutes: " + str(total_paid_minutes_used), "", "", ""])
-    if int(raise_alarm_paid_usage_limit) > 0:
+    if int(raise_alarm_paid_usage_limit) > -1:
         summary_table.add_row(["Alarm on Paid Usage Above: " + raise_alarm_paid_usage_limit, "", "", ""])
     summary_table.add_row(["Days Left in Cycle: " + str(billing_days_left), "", "", ""])
     
@@ -144,14 +144,14 @@ def main():
     workflow_table.add_row(["Remaining Minutes: " + str(remaining_minutes), "", "", "", ""])
     workflow_table.add_row(["Alarm Triggered at: " + raise_alarm_remaining_minutes, "", "", "", ""])
     workflow_table.add_row(["Paid Minutes: " + str(total_paid_minutes_used), "", "", "", ""])
-    if int(raise_alarm_paid_usage_limit) > 0:
+    if int(raise_alarm_paid_usage_limit) > -1:
         workflow_table.add_row(["Alarm on Paid Usage Above: " + raise_alarm_paid_usage_limit, "", "", "", ""])
 
     workflow_table.add_row(["Days Left in Cycle: " + str(billing_days_left), "", "", "", ""])
     print(summary_table)
     print(workflow_table)
     # Check for a paid usage limit first, as it's higher severity and if we've hit this limit then we definitely have hit the free usage limit
-    if total_paid_minutes_used > int(raise_alarm_paid_usage_limit):
+    if int(raise_alarm_paid_usage_limit) > -1 && total_paid_minutes_used > int(raise_alarm_paid_usage_limit):
         error_message = f'Your organisation has hit the user-defined limit of {raise_alarm_paid_usage_limit} paid minutes by using a total of {total_paid_minutes_used}. paid minutes'
         set_workflow_output('failure-reason', error_message)
         raise PaidMinutesThresholdError(error_message)  
