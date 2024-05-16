@@ -145,7 +145,7 @@ def main():
     workflow_table.add_row(["Alarm Triggered at: " + raise_alarm_remaining_minutes, "", "", "", ""])
     workflow_table.add_row(["Paid Minutes: " + str(total_paid_minutes_used), "", "", "", ""])
     if int(raise_alarm_paid_usage_limit) > 0:
-        workflow_table.add_row(["Alarm on Paid Usage Above: " + raise_alarm_paid_usage_limit, "", "", ""])
+        workflow_table.add_row(["Alarm on Paid Usage Above: " + raise_alarm_paid_usage_limit, "", "", "", ""])
 
     workflow_table.add_row(["Days Left in Cycle: " + str(billing_days_left), "", "", "", ""])
     print(summary_table)
