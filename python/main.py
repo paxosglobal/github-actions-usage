@@ -1,5 +1,7 @@
 # The starting point
 import os
+import uuid
+
 from datetime import datetime
 
 from prettytable import PrettyTable
@@ -11,6 +13,10 @@ from ghorg import getreposfromorganisation, getremainingdaysinbillingperiod, get
 
 class RemainingMinutesThresholdError(Exception):
     """Error thrown when the remaining minutes threshold has been breached"""
+    pass
+
+class PaidMinutesThresholdError(Exception):
+    """Error thrown when the paid minutes threshold has been breached"""
     pass
 
 
@@ -32,6 +38,12 @@ logger = getlogger()
 repo_name_column_header = "Repo Name"
 datetime_format = "%Y-%m-%d %H:%M"
 
+def set_workflow_output(name, value):
+    with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+        delimiter = uuid.uuid1()
+        print(f'{name}<<{delimiter}', file=fh)
+        print(value, file=fh)
+        print(delimiter, file=fh)
 
 def main():
     org = os.environ['INPUT_ORGANISATION']
@@ -99,6 +111,7 @@ def main():
     total_minutes_used = monthly_usage_dic["total_minutes_used"]
     total_paid_minutes_used = monthly_usage_dic["total_paid_minutes_used"]
     raise_alarm_remaining_minutes = os.environ['INPUT_RAISEALARMREMAININGMINUTES']
+    raise_alarm_paid_usage_limit = os.environ['INPUT_RAISEALARMONPAIDUSAGELIMIT']
     remaining_minutes = included_minutes - total_minutes_used
 
     summary_table.add_row(["---------", "----", "----", "----"])
@@ -115,7 +128,10 @@ def main():
     summary_table.add_row(["Remaining Minutes: " + str(remaining_minutes), "", "", ""])
     summary_table.add_row(["Alarm Triggered at: " + raise_alarm_remaining_minutes, "", "", ""])
     summary_table.add_row(["Paid Minutes: " + str(total_paid_minutes_used), "", "", ""])
+    if int(raise_alarm_paid_usage_limit) > 0:
+        summary_table.add_row(["Alarm on Paid Usage Above: " + raise_alarm_paid_usage_limit, "", "", ""])
     summary_table.add_row(["Days Left in Cycle: " + str(billing_days_left), "", "", ""])
+    
     workflow_table.add_row(["Usage Minutes " + datetime.now().strftime(datetime_format), "",
                             validate_total_costs["UBUNTU"], validate_total_costs["MACOS"],
                             validate_total_costs["WINDOWS"]])
@@ -128,16 +144,23 @@ def main():
     workflow_table.add_row(["Remaining Minutes: " + str(remaining_minutes), "", "", "", ""])
     workflow_table.add_row(["Alarm Triggered at: " + raise_alarm_remaining_minutes, "", "", "", ""])
     workflow_table.add_row(["Paid Minutes: " + str(total_paid_minutes_used), "", "", "", ""])
+    if int(raise_alarm_paid_usage_limit) > 0:
+        workflow_table.add_row(["Alarm on Paid Usage Above: " + raise_alarm_paid_usage_limit, "", "", ""])
 
     workflow_table.add_row(["Days Left in Cycle: " + str(billing_days_left), "", "", "", ""])
     print(summary_table)
     print(workflow_table)
+    # Check for a paid usage limit first, as it's higher severity and if we've hit this limit then we definitely have hit the free usage limit
+    if total_paid_minutes_used > int(raise_alarm_paid_usage_limit):
+        error_message = f'Your organisation has hit the user-defined limit of {raise_alarm_paid_usage_limit} paid minutes by using a total of {total_paid_minutes_used}. paid minutes'
+        set_workflow_output('failure-reason', error_message)
+        raise PaidMinutesThresholdError(error_message)  
     # we should throw an error if we are running out of minutes as a warning
     # minutes buffer is how low the minutes should get before failing and raising an alarm
     if remaining_minutes < int(raise_alarm_remaining_minutes):
-        raise RemainingMinutesThresholdError(
-            f'Your organisation is running short on minutes, you have {remaining_minutes} left')
-
+        error_message = f'Your organisation is running short on minutes, you have {remaining_minutes} left'
+        set_workflow_output('failure-reason', error_message)
+        raise RemainingMinutesThresholdError(error_message)
 
 if __name__ == "__main__":
     main()
